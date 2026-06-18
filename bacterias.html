@@ -1,0 +1,604 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>INFDEMIC - Bacterias</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>INFDEMIC</h1>
+    <p>Consulta de bacterias</p>
+</header>
+
+<div class="barra-sesion">
+    <span id="nombreUsuario"></span>
+
+    <button
+        type="button"
+        id="btnCerrarSesion"
+    >
+        Cerrar sesión
+    </button>
+</div>
+
+<nav>
+    <a
+        class="boton-menu"
+        href="index.html"
+        data-roles="medico"
+    >
+        Casos clínicos
+    </a>
+
+    <a
+        class="boton-menu activo"
+        href="bacterias.html"
+        data-roles="medico,investigador"
+    >
+        Bacterias
+    </a>
+
+    <a
+        class="boton-menu"
+        href="resistencias.html"
+        data-roles="medico,investigador"
+    >
+        Resistencias
+    </a>
+
+    <a
+        class="boton-menu"
+        href="investigador.html"
+        data-roles="investigador"
+    >
+        Añadir datos
+    </a>
+</nav>
+
+<main>
+    <section class="card">
+        <h2>Bacterias registradas</h2>
+
+        <div class="aviso">
+            Esta sección muestra las bacterias registradas,
+            su familia, descripción y resistencias asociadas.
+        </div>
+
+        <button
+            type="button"
+            id="btnBacterias"
+        >
+            Consultar bacterias
+        </button>
+
+        <div id="tablaBacterias"></div>
+    </section>
+</main>
+
+<footer>
+    <p>
+        Demo académica INFDEMIC -
+        Datos ficticios
+    </p>
+</footer>
+
+<script src="auth.js?v=3"></script>
+<script src="bacterias.js?v=8"></script>
+
+</body>
+</html>
+```
+
+Guarda con:
+
+```text
+CTRL + O
+ENTER
+CTRL + X
+```
+
+---
+
+## 2. Sustituir `bacterias.js`
+
+### Dónde
+
+```text
+Máquina: servidor Ubuntu
+Archivo: /opt/infdemic/frontend/bacterias.js
+```
+
+Abre:
+
+```bash
+nano /opt/infdemic/frontend/bacterias.js
+```
+
+Pega:
+
+```js
+const API_URL = "/api";
+
+function escaparHtml(valor) {
+    return String(valor ?? "").replace(
+        /[&<>"']/g,
+        function (caracter) {
+            const equivalencias = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            };
+
+            return equivalencias[caracter];
+        }
+    );
+}
+
+function obtenerJsonProtegido(
+    url,
+    mensajeError
+) {
+    return peticionAutenticada(url)
+        .then(function (respuesta) {
+            return respuesta
+                .json()
+                .then(function (datos) {
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            datos.error ||
+                            mensajeError
+                        );
+                    }
+
+                    return datos;
+                });
+        });
+}
+
+function cargarBacterias() {
+    const zona =
+        document.getElementById(
+            "tablaBacterias"
+        );
+
+    zona.innerHTML =
+        "<p>Cargando información...</p>";
+
+    Promise.all([
+        obtenerJsonProtegido(
+            API_URL + "/bacterias",
+            "No se pudieron consultar las bacterias."
+        ),
+
+        obtenerJsonProtegido(
+            API_URL + "/resistencias",
+            "No se pudieron consultar las resistencias."
+        )
+    ])
+        .then(function (resultados) {
+            const bacterias = resultados[0];
+            const resistencias = resultados[1];
+
+            if (bacterias.length === 0) {
+                zona.innerHTML =
+                    '<div class="resultado">' +
+                    "No hay bacterias registradas." +
+                    "</div>";
+
+                return;
+            }
+
+            let html =
+                '<div class="tabla-contenedor">' +
+                    "<table>" +
+                        "<thead>" +
+                            "<tr>" +
+                                "<th>Bacteria</th>" +
+                                "<th>Familia</th>" +
+                                "<th>Descripción</th>" +
+                                "<th>Antibiótico</th>" +
+                                "<th>Nivel</th>" +
+                            "</tr>" +
+                        "</thead>" +
+                        "<tbody>";
+
+            bacterias.forEach(
+                function (bacteria) {
+                    const resistenciasBacteria =
+                        resistencias.filter(
+                            function (resistencia) {
+                                return (
+                                    resistencia.bacteria ===
+                                    bacteria.nombre
+                                );
+                            }
+                        );
+
+                    if (
+                        resistenciasBacteria.length === 0
+                    ) {
+                        html +=
+                            "<tr>" +
+                                "<td>" +
+                                    escaparHtml(
+                                        bacteria.nombre
+                                    ) +
+                                "</td>" +
+
+                                "<td>" +
+                                    escaparHtml(
+                                        bacteria.familia
+                                    ) +
+                                "</td>" +
+
+                                "<td>" +
+                                    escaparHtml(
+                                        bacteria.descripcion
+                                    ) +
+                                "</td>" +
+
+                                "<td>Sin información</td>" +
+                                "<td>Sin información</td>" +
+                            "</tr>";
+
+                        return;
+                    }
+
+                    resistenciasBacteria.forEach(
+                        function (resistencia) {
+                            html +=
+                                "<tr>" +
+                                    "<td>" +
+                                        escaparHtml(
+                                            bacteria.nombre
+                                        ) +
+                                    "</td>" +
+
+                                    "<td>" +
+                                        escaparHtml(
+                                            bacteria.familia
+                                        ) +
+                                    "</td>" +
+
+                                    "<td>" +
+                                        escaparHtml(
+                                            bacteria.descripcion
+                                        ) +
+                                    "</td>" +
+
+                                    "<td>" +
+                                        escaparHtml(
+                                            resistencia.antibiotico
+                                        ) +
+                                    "</td>" +
+
+                                    "<td>" +
+                                        escaparHtml(
+                                            resistencia.nivel
+                                        ) +
+                                    "</td>" +
+                                "</tr>";
+                        }
+                    );
+                }
+            );
+
+            html +=
+                        "</tbody>" +
+                    "</table>" +
+                "</div>";
+
+            zona.innerHTML = html;
+        })
+        .catch(function (error) {
+            zona.innerHTML =
+                '<div class="resultado error">' +
+                    escaparHtml(error.message) +
+                "</div>";
+        });
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        const accesoPermitido =
+            protegerPagina([
+                "medico",
+                "investigador"
+            ]);
+
+        if (!accesoPermitido) {
+            return;
+        }
+
+        configurarNavegacion();
+
+        const boton =
+            document.getElementById(
+                "btnBacterias"
+            );
+
+        boton.addEventListener(
+            "click",
+            cargarBacterias
+        );
+    }
+);
+```
+
+Guarda y cierra.
+
+---
+
+## 3. Sustituir `resistencias.html`
+
+Abre:
+
+```bash
+nano /opt/infdemic/frontend/resistencias.html
+```
+
+Pega:
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>INFDEMIC - Resistencias</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>INFDEMIC</h1>
+    <p>Consulta de resistencias</p>
+</header>
+
+<div class="barra-sesion">
+    <span id="nombreUsuario"></span>
+
+    <button
+        type="button"
+        id="btnCerrarSesion"
+    >
+        Cerrar sesión
+    </button>
+</div>
+
+<nav>
+    <a
+        class="boton-menu"
+        href="index.html"
+        data-roles="medico"
+    >
+        Casos clínicos
+    </a>
+
+    <a
+        class="boton-menu"
+        href="bacterias.html"
+        data-roles="medico,investigador"
+    >
+        Bacterias
+    </a>
+
+    <a
+        class="boton-menu activo"
+        href="resistencias.html"
+        data-roles="medico,investigador"
+    >
+        Resistencias
+    </a>
+
+    <a
+        class="boton-menu"
+        href="investigador.html"
+        data-roles="investigador"
+    >
+        Añadir datos
+    </a>
+</nav>
+
+<main>
+    <section class="card">
+        <h2>Resistencias registradas</h2>
+
+        <div class="aviso">
+            Consulta las resistencias detectadas
+            frente a diferentes antibióticos.
+        </div>
+
+        <button
+            type="button"
+            id="btnResistencias"
+        >
+            Consultar resistencias
+        </button>
+
+        <div id="tablaResistencias"></div>
+    </section>
+</main>
+
+<footer>
+    <p>
+        Demo académica INFDEMIC -
+        Datos ficticios
+    </p>
+</footer>
+
+<script src="auth.js?v=3"></script>
+<script src="resistencias.js?v=8"></script>
+
+</body>
+</html>
+```
+
+---
+
+## 4. Sustituir `resistencias.js`
+
+Abre:
+
+```bash
+nano /opt/infdemic/frontend/resistencias.js
+```
+
+Pega:
+
+```js
+const API_URL = "/api";
+
+function escaparHtml(valor) {
+    return String(valor ?? "").replace(
+        /[&<>"']/g,
+        function (caracter) {
+            const equivalencias = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            };
+
+            return equivalencias[caracter];
+        }
+    );
+}
+
+function cargarResistencias() {
+    const zona =
+        document.getElementById(
+            "tablaResistencias"
+        );
+
+    zona.innerHTML =
+        "<p>Cargando resistencias...</p>";
+
+    peticionAutenticada(
+        API_URL + "/resistencias"
+    )
+        .then(function (respuesta) {
+            return respuesta
+                .json()
+                .then(function (datos) {
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            datos.error ||
+                            "No se pudieron consultar las resistencias."
+                        );
+                    }
+
+                    return datos;
+                });
+        })
+        .then(function (resistencias) {
+            if (resistencias.length === 0) {
+                zona.innerHTML =
+                    '<div class="resultado">' +
+                    "No hay resistencias registradas." +
+                    "</div>";
+
+                return;
+            }
+
+            let html =
+                '<div class="tabla-contenedor">' +
+                    "<table>" +
+                        "<thead>" +
+                            "<tr>" +
+                                "<th>Bacteria</th>" +
+                                "<th>Antibiótico</th>" +
+                                "<th>Nivel</th>" +
+                            "</tr>" +
+                        "</thead>" +
+                        "<tbody>";
+
+            resistencias.forEach(
+                function (resistencia) {
+                    html +=
+                        "<tr>" +
+                            "<td>" +
+                                escaparHtml(
+                                    resistencia.bacteria
+                                ) +
+                            "</td>" +
+
+                            "<td>" +
+                                escaparHtml(
+                                    resistencia.antibiotico
+                                ) +
+                            "</td>" +
+
+                            "<td>" +
+                                escaparHtml(
+                                    resistencia.nivel
+                                ) +
+                            "</td>" +
+                        "</tr>";
+                }
+            );
+
+            html +=
+                        "</tbody>" +
+                    "</table>" +
+                "</div>";
+
+            zona.innerHTML = html;
+        })
+        .catch(function (error) {
+            zona.innerHTML =
+                '<div class="resultado error">' +
+                    escaparHtml(error.message) +
+                "</div>";
+        });
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        const accesoPermitido =
+            protegerPagina([
+                "medico",
+                "investigador"
+            ]);
+
+        if (!accesoPermitido) {
+            return;
+        }
+
+        configurarNavegacion();
+
+        const boton =
+            document.getElementById(
+                "btnResistencias"
+            );
+
+        boton.addEventListener(
+            "click",
+            cargarResistencias
+        );
+    }
+);
+```
