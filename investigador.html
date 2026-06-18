@@ -1,0 +1,195 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>INFDEMIC - Investigador</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>INFDEMIC</h1>
+    <p>Panel del investigador</p>
+</header>
+
+<div class="barra-sesion">
+    <span id="nombreUsuario"></span>
+
+    <button
+        type="button"
+        id="btnCerrarSesion"
+    >
+        Cerrar sesión
+    </button>
+</div>
+
+<nav>
+    <a
+        class="boton-menu"
+        href="bacterias.html"
+        data-roles="investigador"
+    >
+        Bacterias
+    </a>
+
+    <a
+        class="boton-menu"
+        href="resistencias.html"
+        data-roles="investigador"
+    >
+        Resistencias
+    </a>
+
+    <a
+        class="boton-menu activo"
+        href="investigador.html"
+        data-roles="investigador"
+    >
+        Añadir datos
+    </a>
+</nav>
+
+<main class="dos-columnas">
+
+    <section class="card">
+        <h2>Añadir bacteria</h2>
+
+        <form id="formBacteria">
+
+            <label for="nombreBacteria">
+                Nombre de la bacteria
+            </label>
+
+            <input
+                type="text"
+                id="nombreBacteria"
+                required
+                minlength="3"
+                maxlength="100"
+                placeholder="Ejemplo: Escherichia coli"
+            >
+
+            <label for="familiaBacteria">
+                Familia
+            </label>
+
+            <input
+                type="text"
+                id="familiaBacteria"
+                required
+                minlength="3"
+                maxlength="100"
+                placeholder="Ejemplo: Enterobacteriaceae"
+            >
+
+            <label for="descripcionBacteria">
+                Descripción
+            </label>
+
+            <textarea
+                id="descripcionBacteria"
+                required
+                minlength="10"
+                maxlength="1000"
+                placeholder="Descripción de la bacteria"
+            ></textarea>
+
+            <button type="submit">
+                Guardar bacteria
+            </button>
+
+        </form>
+
+        <div id="mensajeBacteria"></div>
+    </section>
+
+    <section class="card">
+        <h2>Añadir resistencia</h2>
+
+        <form id="formResistencia">
+
+            <label for="bacteriaResistencia">
+                Bacteria
+            </label>
+
+            <input
+                type="text"
+                id="bacteriaResistencia"
+                list="listaBacterias"
+                required
+                placeholder="Selecciona una bacteria"
+            >
+
+            <datalist id="listaBacterias"></datalist>
+
+            <label for="antibioticoResistencia">
+                Antibiótico
+            </label>
+
+            <input
+                type="text"
+                id="antibioticoResistencia"
+                required
+                minlength="3"
+                maxlength="100"
+                placeholder="Ejemplo: Penicilina"
+            >
+
+            <label for="nivelResistencia">
+                Nivel de resistencia
+            </label>
+
+            <select
+                id="nivelResistencia"
+                required
+            >
+                <option value="">
+                    Selecciona un nivel
+                </option>
+
+                <option value="Bajo">
+                    Bajo
+                </option>
+
+                <option value="Medio">
+                    Medio
+                </option>
+
+                <option value="Alto">
+                    Alto
+                </option>
+            </select>
+
+            <button type="submit">
+                Guardar resistencia
+            </button>
+
+        </form>
+
+        <div id="mensajeResistencia"></div>
+    </section>
+
+</main>
+
+<footer>
+    <p>
+        Demo académica INFDEMIC -
+        Datos ficticios
+    </p>
+</footer>
+
+<script src="auth.js?v=3"></script>
+<script src="investigador.js?v=3"></script>
+
+</body>
+</html>
+```
